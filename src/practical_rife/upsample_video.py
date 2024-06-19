@@ -36,6 +36,9 @@ def run_upsample(video_path: str, output_path: str, interpolate_multiplier: int,
     tot_frame = videoCapture.get(cv2.CAP_PROP_FRAME_COUNT)
     videoCapture.release()
 
+    print("FPS", fps)
+    print("TOTAL NUM FRAME", tot_frame)
+
     fpsNotAssigned = True
     target_fps = fps * interpolate_multiplier
 
@@ -125,25 +128,31 @@ def run_upsample(video_path: str, output_path: str, interpolate_multiplier: int,
         ssim = ssim_matlab(I0_small[:, :3], I1_small[:, :3])
 
         break_flag = False
-        if ssim > 0.996:
-            frame = read_buffer.get()  # read a new frame
-            if frame is None:
-                break_flag = True
-                frame = lastframe
-            else:
-                temp = frame
-            I1 = (
-                torch.from_numpy(np.transpose(frame, (2, 0, 1)))
-                .to(device, non_blocking=True)
-                .unsqueeze(0)
-                .float()
-                / 255.0
-            )
-            I1 = pad_image(I1)
-            I1 = model.inference(I0, I1, 0.5, scale)
-            I1_small = F.interpolate(I1, (32, 32), mode="bilinear", align_corners=False)
-            ssim = ssim_matlab(I0_small[:, :3], I1_small[:, :3])
-            frame = (I1[0] * 255).byte().cpu().numpy().transpose(1, 2, 0)[:h, :w]
+
+        # TODO
+        # there seem to be cases where we hit this like every frame or something and it's way too much
+        # this seems to bloat the buffer ?? is my current guess. 
+        # we should be able to just turn this off for now without any real quality degradation
+        
+        # if ssim > 0.996:
+        #     frame = read_buffer.get()  # read a new frame
+        #     if frame is None:
+        #         break_flag = True
+        #         frame = lastframe
+        #     else:
+        #         temp = frame
+        #     I1 = (
+        #         torch.from_numpy(np.transpose(frame, (2, 0, 1)))
+        #         .to(device, non_blocking=True)
+        #         .unsqueeze(0)
+        #         .float()
+        #         / 255.0
+        #     )
+        #     I1 = pad_image(I1)
+        #     I1 = model.inference(I0, I1, 0.5, scale)
+        #     I1_small = F.interpolate(I1, (32, 32), mode="bilinear", align_corners=False)
+        #     ssim = ssim_matlab(I0_small[:, :3], I1_small[:, :3])
+        #     frame = (I1[0] * 255).byte().cpu().numpy().transpose(1, 2, 0)[:h, :w]
 
         if ssim < 0.2:
             output = []
@@ -184,7 +193,9 @@ def run_upsample(video_path: str, output_path: str, interpolate_multiplier: int,
 
 if __name__ == "__main__":
     run_upsample(
-        "/home/terrance/Practical-RIFE/test_vids/test2.mp4",
-        "/home/terrance/Practical-RIFE/test_vids/test2_OUTPUTX4.mp4",
-        4,
+        "/home/terrance/Desktop/failed_rife/fail1.mp4",
+        # "/home/terrance/Desktop/failed_rife/fail3.webm",
+        # "/home/terrance/Desktop/failed_rife/fail4_30fps_audio.webm",
+        "/home/terrance/projs/Practical-RIFE/test_vids/with_ssim_thing.mp4",
+        2,
     )

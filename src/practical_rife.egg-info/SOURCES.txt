@@ -17,4 +17,3 @@ src/practical_rife/train_log/IFNet_HDv3.py
 src/practical_rife/train_log/RIFE_HDv3.py
 src/practical_rife/train_log/flownet.pkl
 src/practical_rife/train_log/refine.py
-test/test.py
