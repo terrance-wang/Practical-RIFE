@@ -38,6 +38,7 @@ def run_upsample(video_path: str, output_path: str, interpolate_multiplier: int,
 
     print("FPS", fps)
     print("TOTAL NUM FRAME", tot_frame)
+    print("DEVICE", device)
 
     fpsNotAssigned = True
     target_fps = fps * interpolate_multiplier
@@ -193,9 +194,13 @@ def run_upsample(video_path: str, output_path: str, interpolate_multiplier: int,
 
 if __name__ == "__main__":
     run_upsample(
-        "/home/terrance/Desktop/failed_rife/fail1.mp4",
+        # "/home/terrance/Desktop/failed_rife/short_static_30fps_audio.webm",
+        # "/home/terrance/projs/emo/data/output/test-1/202406241731--result/generated_raw.mp4",
+        "/home/terrance/Desktop/failed_rife/generated_raw.mp4",
         # "/home/terrance/Desktop/failed_rife/fail3.webm",
         # "/home/terrance/Desktop/failed_rife/fail4_30fps_audio.webm",
-        "/home/terrance/projs/Practical-RIFE/test_vids/with_ssim_thing.mp4",
+        # "/home/terrance/projs/Practical-RIFE/test_vids/with_ssim_thing.mp4",
+        "/home/terrance/projs/Practical-RIFE/test_vids/long_upsample.mp4",
         2,
+        "cuda",
     )
