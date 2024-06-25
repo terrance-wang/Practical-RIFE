@@ -6,16 +6,16 @@ import numpy as np
 from tqdm import tqdm
 from torch.nn import functional as F
 import warnings
-import _thread
+import threading
 import skvideo.io
 from queue import Queue, Empty
 from practical_rife.pytorch_msssim import ssim_matlab
 from practical_rife.train_log.RIFE_HDv3 import Model
 from practical_rife.utils import transferAudio
 from pathlib import Path
+import time
 
 warnings.filterwarnings("ignore")
-
 
 def run_upsample(video_path: str, output_path: str, interpolate_multiplier: int, device="cuda"):
 
@@ -74,14 +74,6 @@ def run_upsample(video_path: str, output_path: str, interpolate_multiplier: int,
                 break
             vid_out.write(item[:, :, ::-1])
 
-    def build_read_buffer(read_buffer, videogen):
-        try:
-            for frame in videogen:
-                read_buffer.put(frame)
-        except:
-            pass
-        read_buffer.put(None)
-
     def make_inference(I0, I1, n):
         res = []
         for i in range(n):
@@ -91,13 +83,10 @@ def run_upsample(video_path: str, output_path: str, interpolate_multiplier: int,
     def pad_image(img):
         return F.pad(img, padding)
 
-    # write_buffer = Queue(maxsize=500)
-    # read_buffer = Queue(maxsize=500)
 
-    # _thread.start_new_thread(build_read_buffer, (read_buffer, videogen))
-    # _thread.start_new_thread(clear_write_buffer, (write_buffer,))
-
-    write_frames = []
+    write_buffer = Queue(maxsize=500)
+    write_thread = threading.Thread(target=clear_write_buffer, args=(write_buffer,))
+    write_thread.start()
 
     I1 = (
         torch.from_numpy(np.transpose(lastframe, (2, 0, 1)))
@@ -109,13 +98,11 @@ def run_upsample(video_path: str, output_path: str, interpolate_multiplier: int,
     I1 = pad_image(I1)
     temp = None  # save lastframe when processing static frame
 
-    # while True:
     for cur_frame in videogen:
         if temp is not None:
             frame = temp
             temp = None
         else:
-            # frame = read_buffer.get()
             frame = cur_frame
         if frame is None:
             break
@@ -175,66 +162,51 @@ def run_upsample(video_path: str, output_path: str, interpolate_multiplier: int,
         else:
             output = make_inference(I0, I1, interpolate_multiplier - 1)
 
-        # write_buffer.put(lastframe)
-        write_frames.append(lastframe)
+        write_buffer.put(lastframe)
         for mid in output:
             mid = (mid[0] * 255.0).byte().cpu().numpy().transpose(1, 2, 0)
-            # write_buffer.put(mid[:h, :w])
-            write_frames.append(mid[:h, :w])
+            write_buffer.put(mid[:h, :w])
         pbar.update(1)
         lastframe = frame
         if break_flag:
             break
 
-    # write_buffer.put(lastframe)
-    write_frames.append(lastframe)
-    import time
-
-    start = time.time()
-
-    # while not write_buffer.empty():
-    #     time.sleep(0.1)
-
-    for frame in write_frames:
-        vid_out.write(frame[:, :, ::-1])
-
-    time_to_write_vid = time.time() - start
+    write_buffer.put(lastframe)
+    write_buffer.put(None)
 
 
-    start = time.time()
+    while not write_buffer.empty():
+        time.sleep(0.1)
+
     pbar.close()
     if not vid_out is None:
         vid_out.release()
 
     transferAudio(video_path, output_path)
 
-    print("time to write vid",  time_to_write_vid)
-
-    print("time for vid out release and transfer audio", time.time() - start)
-
-    # time.sleep(1)
-
-    # del read_buffer
-    # del write_buffer
-    # del vid_out
-
 
 if __name__ == "__main__":
-    for i in range(500):
-        run_upsample(
-            # "/home/terrance/Desktop/failed_rife/short_static_30fps_audio.webm",
-            # "/home/terrance/projs/emo/data/output/test-1/202406241731--result/generated_raw.mp4",
+    for i in range(100):
+        for j, path in enumerate([
             "/home/terrance/Desktop/failed_rife/generated_raw.mp4",
-            # "/home/terrance/Desktop/failed_rife/fail3.webm",
-            # "/home/terrance/Desktop/failed_rife/fail4_30fps_audio.webm",
-            # "/home/terrance/projs/Practical-RIFE/test_vids/with_ssim_thing.mp4",
-            "/home/terrance/projs/Practical-RIFE/test_vids/long_upsample.mp4",
-            2,
-            "cuda",
-        )
-
-
-
+            "/home/terrance/Desktop/failed_rife/gen_raw_copy.mp4",
+            "/home/terrance/Desktop/failed_rife/gen_raw_copy_2.mp4",
+            # "/home/terrance/Desktop/failed_rife/fail1.mp4",
+            # "/home/terrance/Desktop/failed_rife/fail2.mp4",
+            # "/home/terrance/Desktop/failed_rife/test_5.mp4",
+        ]):
+            run_upsample(
+                # "/home/terrance/Desktop/failed_rife/short_static_30fps_audio.webm",
+                # "/home/terrance/projs/emo/data/output/test-1/202406241731--result/generated_raw.mp4",
+                # "/home/terrance/Desktop/failed_rife/generated_raw.mp4",
+                path,
+                # "/home/terrance/Desktop/failed_rife/fail3.webm",
+                # "/home/terrance/Desktop/failed_rife/fail4_30fps_audio.webm",
+                # "/home/terrance/projs/Practical-RIFE/test_vids/with_ssim_thing.mp4",
+                f"/home/terrance/projs/Practical-RIFE/test_vids/long_upsample_{j}.mp4",
+                2,
+                "cuda",
+            )
 
         print()
         print("cur:", i)
