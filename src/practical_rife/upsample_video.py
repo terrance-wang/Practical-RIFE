@@ -186,28 +186,33 @@ def run_upsample(video_path: str, output_path: str, interpolate_multiplier: int,
 
 
 if __name__ == "__main__":
-    for i in range(100):
-        for j, path in enumerate([
-            "/home/terrance/Desktop/failed_rife/generated_raw.mp4",
-            "/home/terrance/Desktop/failed_rife/gen_raw_copy.mp4",
-            "/home/terrance/Desktop/failed_rife/gen_raw_copy_2.mp4",
-            # "/home/terrance/Desktop/failed_rife/fail1.mp4",
-            # "/home/terrance/Desktop/failed_rife/fail2.mp4",
-            # "/home/terrance/Desktop/failed_rife/test_5.mp4",
-        ]):
-            run_upsample(
-                # "/home/terrance/Desktop/failed_rife/short_static_30fps_audio.webm",
-                # "/home/terrance/projs/emo/data/output/test-1/202406241731--result/generated_raw.mp4",
-                # "/home/terrance/Desktop/failed_rife/generated_raw.mp4",
-                path,
-                # "/home/terrance/Desktop/failed_rife/fail3.webm",
-                # "/home/terrance/Desktop/failed_rife/fail4_30fps_audio.webm",
-                # "/home/terrance/projs/Practical-RIFE/test_vids/with_ssim_thing.mp4",
-                f"/home/terrance/projs/Practical-RIFE/test_vids/long_upsample_{j}.mp4",
-                2,
-                "cuda",
-            )
+    run_upsample(
+        "/home/terrance/Desktop/failed_rife/fail1.mp4",
+        f"/home/terrance/projs/Practical-RIFE/test_vids/upsample_1_fail.mp4",
+        2, "cuda"
+    )
+    # for i in range(100):
+    #     for j, path in enumerate([
+    #         "/home/terrance/Desktop/failed_rife/generated_raw.mp4",
+    #         "/home/terrance/Desktop/failed_rife/gen_raw_copy.mp4",
+    #         "/home/terrance/Desktop/failed_rife/gen_raw_copy_2.mp4",
+    #         # "/home/terrance/Desktop/failed_rife/fail1.mp4",
+    #         # "/home/terrance/Desktop/failed_rife/fail2.mp4",
+    #         # "/home/terrance/Desktop/failed_rife/test_5.mp4",
+    #     ]):
+    #         run_upsample(
+    #             # "/home/terrance/Desktop/failed_rife/short_static_30fps_audio.webm",
+    #             # "/home/terrance/projs/emo/data/output/test-1/202406241731--result/generated_raw.mp4",
+    #             # "/home/terrance/Desktop/failed_rife/generated_raw.mp4",
+    #             path,
+    #             # "/home/terrance/Desktop/failed_rife/fail3.webm",
+    #             # "/home/terrance/Desktop/failed_rife/fail4_30fps_audio.webm",
+    #             # "/home/terrance/projs/Practical-RIFE/test_vids/with_ssim_thing.mp4",
+    #             f"/home/terrance/projs/Practical-RIFE/test_vids/long_upsample_{j}.mp4",
+    #             2,
+    #             "cuda",
+    #         )
 
-        print()
-        print("cur:", i)
-        print()
+    #     print()
+    #     print("cur:", i)
+    #     print()

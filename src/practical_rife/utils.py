@@ -16,7 +16,7 @@ def transferAudio(sourceVideo, targetVideo):
         os.rename(targetVideo, targetNoAudio)
         # combine audio file and new video file
         os.system(
-            'ffmpeg -y -i "{}" -i {} -c copy "{}"'.format(
+            'ffmpeg -y -i "{}" -i {} -c copy -c:v "h264_nvenc" "{}"'.format(
                 targetNoAudio, tempAudioFileName, targetVideo
             )
         )
